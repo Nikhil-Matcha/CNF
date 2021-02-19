@@ -12,13 +12,14 @@ def geturl(request_data):
 		os.path.isdir(temp)
 	except:
 		return ""
-	return temp[1:]
+	return temp
 
 def get_files(path):
-	files = []
-	for file in os.listdir(path):
-		files.append("<a href = \""+os.path.join(path, file) + "\"  > " + os.path.join(path, file).split("\\")[-1] +"</a> <br>")
-	return ''.join(files)
+    newPath = rootPath + "\\" + path[1:]
+    files = []
+    for file in os.listdir(newPath):
+        files.append("<a href = \"" + path + "/" + file + "\"  > " + file + "</a> <br>")
+    return ''.join(files)
 
 HOST = ''
 PORT = 12345
@@ -56,17 +57,17 @@ Content-Type: html;
         if url == "/favicon.ico":
             pass
         elif url == "/":
-            httpResponse = goodRequest + bytes(get_files(rootPath), 'UTF-8')
-        elif os.path.isdir(url):
+            httpResponse = goodRequest + bytes(get_files(""), 'UTF-8')
+        elif os.path.isdir(rootPath + url):
             httpResponse = goodRequest + bytes(get_files(url), 'UTF-8')
-        elif os.path.isfile(url):
-            x = filetype.guess(url)
+        elif os.path.isfile(rootPath + url):
+            x = filetype.guess(rootPath + url)
             contentType = ""
             if x is None:
                 contentType = "/text"
             else:
                 contentType = x.mime
-            f = open(url, encoding="UTF-8", errors='ignore')
+            f = open(rootPath + url, encoding="UTF-8", errors='ignore')
             s1 = f.read()
             httpResponse = goodRequest + bytes(contentType, "UTF-8")+b""";
 
