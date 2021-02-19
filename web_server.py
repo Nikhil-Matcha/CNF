@@ -1,5 +1,6 @@
 import socket
 import os
+import filetype
 
 rootPath = "I:\\desktop\\msit\\NewFolder\\CNF\\Project\\CNF"
 
@@ -11,7 +12,7 @@ def geturl(request_data):
 		os.path.isdir(temp)
 	except:
 		return ""
-	return temp
+	return temp[1:]
 
 def get_files(path):
 	files = []
@@ -58,6 +59,19 @@ Content-Type: html;
             httpResponse = goodRequest + bytes(get_files(rootPath), 'UTF-8')
         elif os.path.isdir(url):
             httpResponse = goodRequest + bytes(get_files(url), 'UTF-8')
+        elif os.path.isfile(url):
+            x = filetype.guess(url)
+            contentType = ""
+            if x is None:
+                contentType = "/text"
+            else:
+                contentType = x.mime
+            f = open(url, encoding="UTF-8", errors='ignore')
+            s1 = f.read()
+            httpResponse = goodRequest + bytes(contentType, "UTF-8")+b""";
+
+
+""" + bytes(s1, "UTF-8")
         else:
-            httpResponse = goodRequest + bytes("""<b><center><font color="red">GOOD REQUEST</font></center></b>""", 'UTF-8')
+            httpResponse = badRequest
     conn.sendall(httpResponse)
