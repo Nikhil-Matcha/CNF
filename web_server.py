@@ -2,6 +2,9 @@ import socket
 import os
 import filetype
 
+from _thread import *
+import threading
+
 rootPath = "I:\\desktop\\msit\\NewFolder\\CNF\\Project\\CNF"
 
 def geturl(request_data):
@@ -28,12 +31,14 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind((HOST, PORT))
 
-s.listen(1)
+s.listen(5)
 print("Server started on port %s" %PORT)
 print("Listening...")
 
-while True:
-    conn, addr = s.accept()
+def myThread(connection):
+    handleRequest(connection)
+
+def handleRequest(conn):
     reqData = conn.recv(1024).decode("UTF-8")
     # print(reqData)
     url = geturl(reqData)
@@ -76,3 +81,7 @@ Content-Type: html;
         else:
             httpResponse = badRequest
     conn.sendall(httpResponse)
+
+while True:
+    conn, addr = s.accept()
+    start_new_thread(myThread, (conn, ))
