@@ -1,51 +1,63 @@
-import socket, requests
+import socket
+import os
 
-s = socket.socket()
-ip= "127.0.0.1"
+rootPath = "I:\\desktop\\msit\\NewFolder\\CNF\\Project\\CNF"
 
-port=80
-s.bind((ip,port))
-print("Server is running with ip: ",ip, " and port ",port)
-#listening for client to connect
-s.listen(3)
-print("Server is listening....")
+def geturl(request_data):
+	temp = request_data.split(" ")[1]
+	if(temp == "/") or temp == "/favicon.ico":
+		return temp
+	try:
+		os.path.isdir(temp)
+	except:
+		return ""
+	return temp
+
+def get_files(path):
+	files = []
+	for file in os.listdir(path):
+		files.append("<a href = \""+os.path.join(path, file) + "\"  > " + os.path.join(path, file).split("\\")[-1] +"</a> <br>")
+	return ''.join(files)
+
+HOST = ''
+PORT = 12345
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind((HOST, PORT))
+
+s.listen(1)
+print("Server started on port %s" %PORT)
+print("Listening...")
 
 while True:
-    #establishing connection with client
-    conn,addr=s.accept()
-    #Receiving data from client
-    data=conn.recv(1024).decode()
-    #decoding to string format
-    print(data)
+    conn, addr = s.accept()
+    reqData = conn.recv(1024).decode("UTF-8")
+    # print(reqData)
+    url = geturl(reqData)
+    print(url)
+    httpResponse = b""""""
+    badRequest = b"""\
+HTTP/1.1 400 BAD REQUEST
+Content-Type: html;
 
-    # Get the content of htdocs/index.html
-    file = open("I:\\desktop\\msit\\NewFolder\\CNF\\Project\\index.html",encoding='utf-8')
-    content = file.read()
+
+<b><center><font color="red">BAD REQUEST</font></center></b>"""
+    goodRequest = b"""\
+HTTP/1.1 200 OK
+Content-Type: html;
 
 
-    response="HTTP/1.1 200 Ok\n\n"+content
-    headers=data.split('\n')
-    print(headers[0])
-    filename=headers[0].split()[1]
-    print(filename)
-
-    try:
-        fin=open('I:\\desktop\\msit\\NewFolder\\CNF\\Project\\'+filename,encoding='utf-8')
-        content=fin.read()
-        fin.close()
-        response="HTTP/1.1 200 Ok\n\n"+content
-        conn.send(response.encode())
-        
-    except FileNotFoundError:
-        if filename.split(".")[1] != 'html':
-            response = 'HTTP/1.0 415 Unsupported Media Type:\n\n 415 Unsupported Media Type The server will not accept the request, because the media type is not supported'
-
-        elif filename != '/index.html':
-            response = 'HTTP/1.0 403 Forbidden Pages\n\n 403 Forbidden Pages You are not being allowed access, for whatever reason'
-
+"""
+    if reqData.split(" ")[0] != "GET" or url == "":
+        httpResponse = badRequest
+    else:
+        if url == "/favicon.ico":
+            pass
+        elif url == "/":
+            httpResponse = goodRequest + bytes(get_files(rootPath), 'UTF-8')
+        elif os.path.isdir(url):
+            httpResponse = goodRequest + bytes(get_files(url), 'UTF-8')
         else:
-            response = 'HTTP/1.0 400 bad Request\n\n 400 bad Request Server does not recognize the URL'
-
-    conn.sendall(response.encode())
-    conn.close()
-s.close()
+            httpResponse = goodRequest + bytes("""<b><center><font color="red">GOOD REQUEST</font></center></b>""", 'UTF-8')
+    conn.sendall(httpResponse)
