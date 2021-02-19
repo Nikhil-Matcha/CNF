@@ -24,17 +24,6 @@ def get_files(path):
         files.append("<a href = \"" + path + "/" + file + "\"  > " + file + "</a> <br>")
     return ''.join(files)
 
-HOST = ''
-PORT = 12345
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind((HOST, PORT))
-
-s.listen(5)
-print("Server started on port %s" %PORT)
-print("Listening...")
-
 def myThread(connection):
     handleRequest(connection)
 
@@ -81,6 +70,17 @@ Content-Type: html;
         else:
             httpResponse = badRequest
     conn.sendall(httpResponse)
+
+HOST = ''
+PORT = 12345
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind((HOST, PORT))
+
+s.listen(5)
+print("Server started on port %s" %PORT)
+print("Listening...")
 
 while True:
     conn, addr = s.accept()
